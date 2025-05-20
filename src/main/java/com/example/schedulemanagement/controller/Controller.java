@@ -5,9 +5,8 @@ import com.example.schedulemanagement.dto.ResponseDto;
 import com.example.schedulemanagement.entity.Schedule;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/schedules")
@@ -31,6 +30,31 @@ public class Controller {
         scheduleList.put(scheduleId, schedule);
 
         return new ResponseDto(schedule);
+    }
+
+    // 일정 전체 조회 - Get API
+    @GetMapping
+    public List<ResponseDto> getSchedules(
+            @RequestParam(required = false) String modifiedDate,
+            @RequestParam(required = false) String username
+    ) {
+        return scheduleList.values().stream()
+                .filter(schedule -> {
+                    boolean matchDate = true;
+                    boolean matchUser = true;
+
+                    if (modifiedDate != null && !modifiedDate.isBlank()) {
+                        matchDate = schedule.getDateModified().toLocalDate().toString().equals(modifiedDate);
+                    }
+                    if (username != null && !username.isBlank()) {
+                        matchUser = schedule.getUsername().equals(username);
+                    }
+
+                    return matchDate && matchUser;
+                })
+                .sorted(Comparator.comparing(Schedule::getDateModified).reversed())
+                .map(ResponseDto::new)
+                .collect(Collectors.toList());
     }
 
     // 일정 단건 조회 - Get API
