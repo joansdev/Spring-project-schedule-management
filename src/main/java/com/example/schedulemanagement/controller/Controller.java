@@ -1,0 +1,43 @@
+package com.example.schedulemanagement.controller;
+
+import com.example.schedulemanagement.dto.RequestDto;
+import com.example.schedulemanagement.dto.ResponseDto;
+import com.example.schedulemanagement.entity.Schedule;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/schedules")
+public class Controller {
+
+    // 일정 리스트
+    private final Map<Long, Schedule> scheduleList = new HashMap<>();
+
+    // 일정 작성 - Post API
+    @PostMapping
+    public ResponseDto createSchedule(@RequestBody RequestDto dto) {
+
+        // 식별자 +1
+        Long scheduleId = scheduleList.isEmpty() ? 1 : Collections.max(scheduleList.keySet()) + 1;
+
+        // Schedule 객체 생성
+        Schedule schedule = new Schedule(scheduleId, dto.getTitle(), dto.getUsername(), dto.getPassword(), dto.getDateCreated(), dto.getDateModified());
+        // JDBC 환경임에 따라, 날짜 관련 데이터들을 명시적으로 기재/요청 -> JPA 환경에선 @CreatedDate, @LastModifiedDate 등 어노테이션 사용
+
+        // 데이터 저장
+        scheduleList.put(scheduleId, schedule);
+
+        return new ResponseDto(schedule);
+    }
+
+    // 일정 단건 조회 - Get API
+    @GetMapping("/{id}")
+    public ResponseDto getSchedule(@PathVariable Long id) {
+        Schedule schedule = scheduleList.get(id);
+        return new ResponseDto(schedule);
+    }
+
+}
