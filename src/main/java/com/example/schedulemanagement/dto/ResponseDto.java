@@ -2,10 +2,12 @@ package com.example.schedulemanagement.dto;
 
 import com.example.schedulemanagement.entity.Schedule;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 public class ResponseDto {
 
     private Long id;

@@ -5,6 +5,7 @@ import com.example.schedulemanagement.dto.ResponseDto;
 import com.example.schedulemanagement.entity.Schedule;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,4 +65,53 @@ public class Controller {
         return new ResponseDto(schedule);
     }
 
+    // 일정 수정 - Patch API
+    @PatchMapping("/{id}")
+    public ResponseDto updateSchedule(
+            @PathVariable Long id,
+            @RequestBody RequestDto dto
+    ) {
+        Schedule schedule = scheduleList.get(id);
+        if (schedule == null) {
+            throw new IllegalArgumentException("해당 일정이 존재하지 않습니다.");
+        }
+
+        // 비밀번호 확인
+        if (!schedule.getPassword().equals(dto.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 수정 가능한 필드만 업데이트
+        if (dto.getTitle() != null) {
+            schedule.setTitle(dto.getTitle());
+        }
+        if (dto.getUsername() != null) {
+            schedule.setUsername(dto.getUsername());
+        }
+
+        // 수정일 갱신
+        schedule.setDateModified(LocalDateTime.now());
+
+        return new ResponseDto(schedule);
+    }
+
+    // 일정 삭제 - Delete API
+    @DeleteMapping("/{id}")
+    public String deleteSchedule(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request
+    ) {
+        Schedule schedule = scheduleList.get(id);
+        if (schedule == null) {
+            throw new IllegalArgumentException("해당 일정이 존재하지 않습니다.");
+        }
+
+        String password = request.get("password");
+        if (password == null || !schedule.getPassword().equals(password)) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        scheduleList.remove(id);
+        return "일정이 성공적으로 삭제되었습니다.";
+    }
 }
